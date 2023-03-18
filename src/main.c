@@ -1,8 +1,3 @@
-#define MOVE_UP 0
-#define MOVE_RIGHT 1
-#define MOVE_BOTTOM 2
-#define MOVE_LEFT 3
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,57 +27,48 @@ int width, height, max_snake_length;
 int score = 0;
 int snake_length = 1;
 
-char snake_char = 'x';
-char star = '*';
-char space = ' ';
-char price_char = '$';
-
 
 void init() {
-	width = 30;
-	height = width-1;
-	max_snake_length = ((width-3) * (height-2)) - 1;
+	width = 60;
+	height = 30;
+	max_snake_length = ((width-3) * (height-2)) - 1; // width minus borders minus newfile char, height minus borders, minus 1 for 0-based indexes
 }
 
 void draw(int snake_coordinates[][2], int rows) {
-	char buf[height][width+1]; // +1 for newline char
-	for (int h=0; h<height; ++h) {
-		for (int w=0; w<width; ++w) {
-			for (int i=0; i<rows; ++i) {
-				int x, y;
-				x = snake_coordinates[i][0];
-				y = snake_coordinates[i][1];
-				// printf("x, y | %d %d\n", x, y);
-				if (h == 0 || h == height-1 || w == 0 || w == width-2) buf[h][w] = star;
-				else if (x == w && y == h) {
-					printf("hit %d %d\n", x, y);
-					buf[h][w] = snake_char;
+    printf("┌");
+    for (int j = 0; j < width; ++j) {
+        printf("─");
+    }
+    printf("┐\n");
 
-				}
-				else buf[h][w] = space;
-			}
-		}
-		buf[h][width-1] = '\n';
-	}
+    for (int j = 0; j < height; j++) {
+        printf("│");
+        for (int i = 0; i < width; i++)
+            printf("·");
+        printf("│\n");
+    }
+    printf("└");
+    for (int i = 0; i < width; i++)
+        printf("─");
+    printf("┘\n");
 
-	for (int h=0; h<height; ++h)
-		for (int w=0; w<width; ++w)
-			putc(buf[h][w], stdout);
+//	for (int h=0; h<height; ++h)
+//		for (int w=0; w<width; ++w)
+//			putc(buf[h][w], stdout);
 }
 
 void main() {
-	int snake_buf[2][2] = {0}; // matrix of snake coordinates
-	snake_buf[0][0] = 4;
-	snake_buf[0][1] = 5;
-	snake_buf[1][0] = 5;
-	snake_buf[1][1] = 5;
-	
-	printf("ciao %d\n", snake_buf[1][1]);
-	init();
+	int snake_buf[27][2];//= {{0}}; // matrix of snake coordinates
+//	printf("ciao %d\n", snake_buf[1][1]);
+    snake_buf[0][0] = 4;
+    snake_buf[0][1] = 5;
+    snake_buf[1][0] = 5;
+    snake_buf[1][1] = 5;
+    init();
 	while (1) {
 		draw(snake_buf, 2);
-		msleep(100);
-		break;
+		msleep(500);
+        break;
 		system("clear");
 	}
 }
