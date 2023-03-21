@@ -1,3 +1,13 @@
+#define UP 0
+#define RIGHT 1
+#define DOWN 2
+#define LEFT 3
+#define COLS 10
+#define ROWS 5
+#define WIDTH ROWS+2 // rows
+#define HEIGHT COLS+2 // columns
+#define SNAKE_LENGTH (WIDTH-2)*(HEIGHT-2)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,46 +39,77 @@ int snake_length = 1;
 
 
 void init() {
-	width = 60;
-	height = 30;
+	width = 30;
+	height = 60;
 	max_snake_length = ((width-3) * (height-2)) - 1; // width minus borders minus newfile char, height minus borders, minus 1 for 0-based indexes
 }
 
-void draw(int snake_coordinates[][2], int rows) {
-    printf("┌");
-    for (int j = 0; j < width; ++j) {
-        printf("─");
+void draw_board(int board[WIDTH][HEIGHT]) {
+    msleep(1000);
+    system("clear");
+    for (int i = 0; i < WIDTH; ++i) {
+        for (int j = 0; j < HEIGHT; ++j) {
+            printf("%c", board[i][j]);
+        }
+        printf("\n");
     }
-    printf("┐\n");
-
-    for (int j = 0; j < height; j++) {
-        printf("│");
-        for (int i = 0; i < width; i++)
-            printf("·");
-        printf("│\n");
-    }
-    printf("└");
-    for (int i = 0; i < width; i++)
-        printf("─");
-    printf("┘\n");
-
-//	for (int h=0; h<height; ++h)
-//		for (int w=0; w<width; ++w)
-//			putc(buf[h][w], stdout);
 }
 
-void main() {
-	int snake_buf[27][2];//= {{0}}; // matrix of snake coordinates
-//	printf("ciao %d\n", snake_buf[1][1]);
-    snake_buf[0][0] = 4;
-    snake_buf[0][1] = 5;
-    snake_buf[1][0] = 5;
-    snake_buf[1][1] = 5;
-    init();
-	while (1) {
-		draw(snake_buf, 2);
-		msleep(500);
-        break;
-		system("clear");
-	}
+void set_board(int board[WIDTH][HEIGHT]) {
+    for (int w = 0; w < WIDTH; ++w) {
+        for (int h = 0; h < HEIGHT; ++h) {
+            if (w == 0) board[w][h] = '_';
+            else if (w == WIDTH-1) board[w][h] = '-';
+            else if (h == 0 || h == HEIGHT-1) board[w][h] = '|';
+            else board[w][h] = '~';
+        }
+    }
+}
+
+void apply_snake_coords(int snake[SNAKE_LENGTH][2], int board[WIDTH][HEIGHT]) {
+    for (int r = 0; r < SNAKE_LENGTH-1; ++r) {
+        int x = snake[r][0];
+        int y = snake[r][1];
+        if (x + y == 0) return;
+        board[x][y] = 'X';
+    }
+}
+
+int move_snake(int direction, int snake[SNAKE_LENGTH][2]) {
+    if (direction == UP) snake[0][0]--;
+    else if (direction == RIGHT) snake[0][1]++;
+    else if (direction == DOWN) snake[0][0]++;
+    else if (direction == LEFT) snake[0][1]--;
+    else return 1;
+    for (int coord = 1; coord < SNAKE_LENGTH; ++coord) {
+        int x = snake[coord][0];
+        int y = snake[coord][1];
+        if (x + y == 0) break;
+        snake[coord][0] = snake[coord+1][0];
+        snake[coord][1] = snake[coord+1][1];
+    }
+    return 0;
+}
+
+int main() {
+    int board[WIDTH][HEIGHT];
+    int snake[SNAKE_LENGTH][2] = {
+            {5, 5},
+            { 5, 6},
+            { 5, 7},
+            { 5, 8}
+    };
+    set_board(board);
+    apply_snake_coords(snake, board);
+    draw_board(board);
+    move_snake(UP, snake);
+    apply_snake_coords(snake, board);
+    draw_board(board);
+    move_snake(UP, snake);
+    apply_snake_coords(snake, board);
+    draw_board(board);
+    move_snake(RIGHT, snake);
+    apply_snake_coords(snake, board);
+    draw_board(board);
+    return 0;
 }

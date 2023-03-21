@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(myproject)
+project(snake)
 
 file(GLOB SOURCES
     "src/*.c"
