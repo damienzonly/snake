@@ -1,17 +1,18 @@
-#define UP 0
-#define RIGHT 1
-#define DOWN 2
-#define LEFT 3
-#define COLS 10
-#define ROWS 5
-#define WIDTH ROWS+2 // rows
-#define HEIGHT COLS+2 // columns
-#define SNAKE_LENGTH (WIDTH-2)*(HEIGHT-2)
+#define _UP 0
+#define _RIGHT 1
+#define _DOWN 2
+#define _LEFT 3
+#define _COLS 10
+#define _ROWS 5
+#define _WIDTH _ROWS+2 // rows
+#define _HEIGHT _COLS+2 // columns
+#define _SNAKE_LENGTH (_WIDTH-2)*(_HEIGHT-2)
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
+#include <ncurses.h>
 
 int msleep(long tms)
 {
@@ -33,11 +34,11 @@ int msleep(long tms)
 /**
  * performs print operation to print the bytes in the board matrix
  */
-void draw_board(int board[WIDTH][HEIGHT]) {
-    msleep(1000);
+void draw_board(int board[_WIDTH][_HEIGHT]) {
+    msleep(100);
     system("clear");
-    for (int i = 0; i < WIDTH; ++i) {
-        for (int j = 0; j < HEIGHT; ++j) {
+    for (int i = 0; i < _WIDTH; ++i) {
+        for (int j = 0; j < _HEIGHT; ++j) {
             printf("%c", board[i][j]);
         }
         printf("\n");
@@ -47,19 +48,19 @@ void draw_board(int board[WIDTH][HEIGHT]) {
 /**
  * sets every board character into the board matrix
  */
-void reset_board(int board[WIDTH][HEIGHT]) {
-    for (int w = 0; w < WIDTH; ++w) {
-        for (int h = 0; h < HEIGHT; ++h) {
+void reset_board(int board[_WIDTH][_HEIGHT]) {
+    for (int w = 0; w < _WIDTH; ++w) {
+        for (int h = 0; h < _HEIGHT; ++h) {
             if (w == 0) board[w][h] = '_';
-            else if (w == WIDTH-1) board[w][h] = '-';
-            else if (h == 0 || h == HEIGHT-1) board[w][h] = '|';
+            else if (w == _WIDTH - 1) board[w][h] = '-';
+            else if (h == 0 || h == _HEIGHT - 1) board[w][h] = '|';
             else board[w][h] = '~';
         }
     }
 }
 
-void apply_snake_to_board(int snake[SNAKE_LENGTH][2], int board[WIDTH][HEIGHT]) {
-    for (int r = 0; r < SNAKE_LENGTH; ++r) {
+void apply_snake_to_board(int snake[_SNAKE_LENGTH][2], int board[_WIDTH][_HEIGHT]) {
+    for (int r = 0; r < _SNAKE_LENGTH; ++r) {
         int x = snake[r][0];
         int y = snake[r][1];
         if (x + y == 0) return;
@@ -70,15 +71,15 @@ void apply_snake_to_board(int snake[SNAKE_LENGTH][2], int board[WIDTH][HEIGHT]) 
 /**
  * performs left shift by 1 position in the snake matrix
  */
-int move_snake(int direction, int snake[SNAKE_LENGTH][2], int snake_length) {
+int move_snake(int direction, int snake[_SNAKE_LENGTH][2], int snake_length) {
     for (int i=snake_length-1; i > 0; --i) {
         snake[i][0] = snake[i-1][0];
         snake[i][1] = snake[i-1][1];
     }
-    if (direction == UP) snake[0][0]--;
-    else if (direction == RIGHT) snake[0][1]++;
-    else if (direction == DOWN) snake[0][0]++;
-    else if (direction == LEFT) snake[0][1]--;
+    if (direction == _UP) snake[0][0] = (snake[0][0] - 1) % (_ROWS + 1);
+    else if (direction == _RIGHT) snake[0][1] = (snake[0][1] + 1) % (_COLS + 1);
+    else if (direction == _LEFT) snake[0][0] = (snake[0][0] + 1) % (_ROWS + 1);
+    else if (direction == _DOWN) snake[0][1] = (snake[0][1] - 1) % (_COLS + 1);
     else return 1;
     return 0;
 }
@@ -86,27 +87,37 @@ int move_snake(int direction, int snake[SNAKE_LENGTH][2], int snake_length) {
 int main() {
     int score = 0;
     int snake_length = 4;
-    int board[WIDTH][HEIGHT];
-    int snake[SNAKE_LENGTH][2] = {
+    int board[_WIDTH][_HEIGHT];
+    int snake[_SNAKE_LENGTH][2] = {
             {5, 5},
             {5, 6},
             {5, 7},
             {5, 8}
     };
-    reset_board(board);
-    apply_snake_to_board(snake, board);
-    draw_board(board);
-    move_snake(UP, snake, snake_length);
-    reset_board(board);
-    apply_snake_to_board(snake, board);
-    draw_board(board);
-    move_snake(UP, snake, snake_length);
-    reset_board(board);
-    apply_snake_to_board(snake, board);
-    draw_board(board);
-    move_snake(RIGHT, snake, snake_length);
-    reset_board(board);
-    apply_snake_to_board(snake, board);
-    draw_board(board);
+    initscr();                  // initialize ncurses
+//    cbreak();                   // disable line buffering
+    noecho();                   // disable echoing of typed characters
+    nodelay(stdscr, TRUE);      // make input non-blocking
+    timeout(0);
+//    setvbuf(stdout, NULL, _IONBF, 0);
+    while (1) {
+        reset_board(board);
+        apply_snake_to_board(snake, board);
+        draw_board(board);
+        char ch = getch();
+        if (ch != ERR) {
+            printf("char %c", ch);
+            if (ch == 'w') {
+                move_snake(_UP, snake, snake_length);
+            } else if (ch == 'a') {
+                move_snake(_DOWN, snake, snake_length);
+            } else if (ch == 's') {
+                move_snake(_LEFT, snake, snake_length);
+            } else if (ch == 'd') {
+                move_snake(_RIGHT, snake, snake_length);
+            }
+        }
+        endwin();
+    }
     return 0;
 }
