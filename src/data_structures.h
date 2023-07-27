@@ -1,14 +1,18 @@
 #ifndef __SNAKE_DS
 #define __SNAKE_DS
+#include <termios.h>
 
-typedef struct {
+typedef struct Segment {
     int x;
     int y;
-} Coordinates;
+    struct Segment* next;
+} Segment;
 
 typedef struct {
+    Segment* head;
     int length;
-    Coordinates segments[];
 } Snake;
+
+void add_segment(Snake*, int, int);
 
 #endif

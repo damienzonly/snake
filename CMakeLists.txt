@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.5)
 project (snake)
-
+set(CMAKE_C_STANDARD 11)
 file(GLOB SOURCES "src/*.c" "src/*.h")
-
 add_executable (snake ${SOURCES})
+target_link_libraries(snake pthread)
