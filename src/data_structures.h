@@ -13,6 +13,6 @@ typedef struct {
     int length;
 } Snake;
 
-void add_segment(Snake*, int, int);
+void add_segment_tail(Snake*, int, int);
 
 #endif

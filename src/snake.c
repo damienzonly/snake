@@ -64,7 +64,7 @@ Segment* _create_segment(int x, int y) {
     return pSegment;
 }
 
-void add_segment(Snake* snake, int x, int y) {
+void add_segment_tail(Snake* snake, int x, int y) {
     Segment* s = snake->head;
     Segment* new_segment = _create_segment(x, y);
     if (s == NULL) {
@@ -79,19 +79,31 @@ void add_segment(Snake* snake, int x, int y) {
     return;
 }
 
-void add_segment_front(Snake* snake, int x, int y) {
+void add_segment_head(Snake* snake, int x, int y) {
     Segment* pHead = snake->head;
     Segment* newSegment = _create_segment(x, y);
-    snake->length++;
     snake->head = newSegment;
     snake->head->next = pHead;
+    snake->length++;
+}
+
+// todo: when less than 3 segments, may be a problem
+void pop_segment(Snake* snake) {
+    Segment* s = snake->head;
+    while (s->next->next != NULL) {
+        s = s->next;
+    }
+    free(s->next);
+    s->next = NULL;
+    snake->length--;
 }
 
 void move(Snake* snake, MOVE m) {
-    if (m == UP) add_segment_front(snake, snake->head->x, snake->head->y-1);
-    else if (m == DOWN) add_segment_front(snake, snake->head->x, snake->head->y+1);
-    else if (m == LEFT) add_segment_front(snake, snake->head->x-1, snake->head->y);
-    else if (m == RIGHT) add_segment_front(snake, snake->head->x+1, snake->head->y);
+    if (m == UP) add_segment_head(snake, snake->head->x, snake->head->y-1);
+    else if (m == DOWN) add_segment_head(snake, snake->head->x, snake->head->y+1);
+    else if (m == LEFT) add_segment_head(snake, snake->head->x-1, snake->head->y);
+    else if (m == RIGHT) add_segment_head(snake, snake->head->x+1, snake->head->y);
+    pop_segment(snake);
 }
 
 void print_snake(Snake* snake) {

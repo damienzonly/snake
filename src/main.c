@@ -33,7 +33,7 @@ int main() {
     Snake* snake = (Snake*)malloc(sizeof(Snake) + sizeof(Segment) * length);
     snake->length = length;
     for (int i = 0; i < 5; ++i) {
-        add_segment(snake, initialX + i, initialY);
+        add_segment_tail(snake, initialX + i, initialY);
     }
     pthread_t t_input;
     pthread_create(&t_input, NULL, (void*) t_user_input, snake);
@@ -41,7 +41,7 @@ int main() {
         clear_screen();
         // print_snake(snake);
         draw(board_width, board_height, snake);
-        usleep(500000);
+        usleep(100000);
     }
     pthread_join(t_input, NULL);
     free(snake);
