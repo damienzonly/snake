@@ -21,7 +21,7 @@ void signal_handler(int signal) {
     t.c_lflag &= ICANON;
     t.c_lflag &= ECHO;
     tcsetattr(0, TCSANOW, &t);
-    char* message = "ciaoooo finito\n";
+    char* message = "message\n";
     write(0, message, strlen(message));
 }
 
