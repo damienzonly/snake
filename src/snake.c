@@ -137,10 +137,11 @@ void pop_segment(Snake* snake) {
 }
 
 void move(Snake* snake, MOVE m) {
-    if (m == UP) add_segment_head(snake, snake->head->x, snake->head->y-1);
-    else if (m == DOWN) add_segment_head(snake, snake->head->x, snake->head->y+1);
-    else if (m == LEFT) add_segment_head(snake, snake->head->x-1, snake->head->y);
-    else if (m == RIGHT) add_segment_head(snake, snake->head->x+1, snake->head->y);
+    int x = snake->head->x, y = snake->head->y;
+    if (m == UP) add_segment_head(snake, x, y-1);
+    else if (m == DOWN) add_segment_head(snake, x, y+1);
+    else if (m == LEFT) add_segment_head(snake, x-1, y);
+    else if (m == RIGHT) add_segment_head(snake, x+1, y);
     else return;
     pop_segment(snake);
 }
