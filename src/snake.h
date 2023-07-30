@@ -2,20 +2,17 @@
 #define __SNAKE
 #include "data_structures.h"
 
-typedef enum {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT
-} MOVE;
-void draw(int, int, Snake*);
+void draw(uint16_t, uint16_t, Snake*);
 void t_user_input(void* data);
 void print_snake(Snake*);
 void move(Snake* snake, MOVE direction);
-Segment* _create_segment(int x, int y);
-void add_segment_tail(Snake* snake, int x, int y);
-void add_segment_head(Snake* snake, int x, int y);
-int check_collision(Snake* snake, int nextX, int nextY, int board_width, int board_height);
-int segment_exists(Segment* head, int x, int y);
-int check_collision(Snake* snake, int nextX, int nextY, int board_width, int board_height);
+Segment* _create_segment(uint16_t x, uint16_t y);
+void add_segment_tail(Snake* snake, uint16_t x, uint16_t y);
+void add_segment_head(Snake* snake, uint16_t x, uint16_t y);
+uint16_t check_collision(Snake* snake, uint16_t nextX, uint16_t nextY, uint16_t board_width, uint16_t board_height);
+uint16_t segment_exists(Segment* head, uint16_t x, uint16_t y);
+uint16_t check_collision(Snake* snake, uint16_t nextX, uint16_t nextY, uint16_t board_width, uint16_t board_height);
+void free_snake(Snake* snake);
+void clear_screen();
+MOVE char_to_direction(char c);
 #endif

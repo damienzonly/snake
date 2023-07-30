@@ -2,21 +2,32 @@
 #define __SNAKE_DS
 #include <termios.h>
 
+typedef enum {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+} MOVE;
+
 typedef struct Segment {
-    int x;
-    int y;
+    uint16_t x;
+    uint16_t y;
     struct Segment* next;
 } Segment;
 
 typedef struct {
     Segment* head;
-    int length;
+    uint16_t length;
 } Snake;
 
 typedef struct {
     Snake* snake;
-    int board_width;
-    int board_height;
+    uint16_t board_width;
+    uint16_t board_height;
+    MOVE direction;
+    uint32_t speed;
+    pthread_mutex_t mtx;
+    uint8_t dead;
 } GameObjects;
 
 #endif

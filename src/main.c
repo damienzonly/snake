@@ -6,14 +6,7 @@
 #include "snake.h"
 #include "data_structures.h"
 #include "string.h"
-
-size_t board_width;
-size_t board_height;
-size_t dead;
-
-void clear_screen() {
-    printf("\033[2J\033[H"); // ANSI escape code to clear the screen and move cursor to (0,0)
-}
+#include "tty.h"
 
 void signal_handler(int signal) {
     struct termios t;
@@ -26,14 +19,16 @@ void signal_handler(int signal) {
 }
 
 int main() {
+    uint16_t board_width, board_height,
+            length, initialX, initialY;
+    pthread_t thread;
     // signal(SIGINT, signal_handler);
     // signal(SIGTERM, signal_handler);
-    dead = 0;
-    board_width = 20;
+    board_width = 50;
     board_height = board_width / 2;
-    int length = 5;
-    int initialX = board_width*0.3;
-    int initialY = board_height*0.3;
+    length = 5;
+    initialX = board_width*0.3;
+    initialY = board_height*0.3;
 
     // initialize snake segments and length
     Snake* snake = (Snake*)malloc(sizeof(Snake) + sizeof(Segment) * length);
@@ -41,21 +36,39 @@ int main() {
     for (int i = 0; i <= length; ++i) {
         add_segment_tail(snake, initialX + i, initialY);
     }
-    pthread_t t_input;
+    
     GameObjects game_obj = {
         .board_width = board_width,
         .board_height = board_height,
-        .snake = snake
+        .snake = snake,
+        .direction = UP,
+        .speed = 100000,
+        .dead = 0
     };
-    pthread_create(&t_input, NULL, (void*) t_user_input, &game_obj);
-    while (!dead) {
-        clear_screen();
-        printf("pid: %d\n", getpid());
-        draw(board_width, board_height, snake);
-        usleep(100000);
+
+    if ((pthread_mutex_init(&game_obj.mtx, NULL)) != 0) {
+        printf("failed initializing mutex\n");
+        exit(1);
     }
-    pthread_join(t_input, NULL);
-    free(snake);
     
+    // first frame
+    int pid = getpid();
+    printf("pid: %d\n", pid);
+    draw(board_width, board_height, snake);
+    set_termios_opts();
+    game_obj.direction = char_to_direction(getchar());;
+    pthread_create(&thread, NULL, (void*) t_user_input, &game_obj);
+    while (1) {
+        printf("pid: %d\n", pid);
+        pthread_mutex_lock(&game_obj.mtx);
+        if (game_obj.dead) break;
+        draw(board_width, board_height, snake);
+        move(snake, game_obj.direction);
+        pthread_mutex_unlock(&game_obj.mtx);
+        usleep(game_obj.speed);
+    }
+    printf("game over\n");
+    pthread_join(thread, NULL);
+    // free_snake(snake);
     return 0;
 }

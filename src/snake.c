@@ -1,14 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "data_structures.h"
 #include "snake.h"
 #include "tty.h"
 
+void clear_screen() {
+    printf("\033[2J\033[H"); // ANSI escape code to clear the screen and move cursor to (0,0)
+}
 
-void draw(int boardW, int boardY, Snake* snake) {
-    int matrix[boardW][boardY];
+void draw(uint16_t boardW, uint16_t boardY, Snake* snake) {
+    clear_screen();
+    uint16_t matrix[boardW][boardY];
     for (int y = 0; y < boardY; ++y) {
-        for (int x = 0; x < boardW; ++x) {
+        for (uint16_t x = 0; x < boardW; ++x) {
             if (y == 0 || y == boardY-1) {
                 matrix[x][y] = '#';
             } else {
@@ -25,15 +30,15 @@ void draw(int boardW, int boardY, Snake* snake) {
         matrix[s->x][s->y] = 'o';
         s = s->next;
     }
-    for (int y = 0; y < boardY; ++y) {
-        for (int x = 0; x < boardW; ++x) {
+    for (uint16_t y = 0; y < boardY; ++y) {
+        for (uint16_t x = 0; x < boardW; ++x) {
             printf("%c", matrix[x][y]);
         }
         printf("\n");
     }
 }
 
-int check_collision(Snake* snake, int nextX, int nextY, int board_width, int board_height) {
+uint16_t check_collision(Snake* snake, uint16_t nextX, uint16_t nextY, uint16_t board_width, uint16_t board_height) {
     Segment* seg = snake->head;
     if (segment_exists(seg->next, nextX, nextY)) return 1;
     while (seg->next != NULL) {
@@ -46,7 +51,7 @@ int check_collision(Snake* snake, int nextX, int nextY, int board_width, int boa
     return 0;
 }
 
-int segment_exists(Segment* head, int x, int y) {
+uint16_t segment_exists(Segment* head, uint16_t x, uint16_t y) {
     while (head->next != NULL) {
         head = head->next;
         if (head->x == x && head->y == y) return 1;
@@ -54,47 +59,48 @@ int segment_exists(Segment* head, int x, int y) {
     return 0;
 }
 
+MOVE char_to_direction(char c) {
+    MOVE direction;
+    switch(c) {
+        case 'a':
+        case 'h':
+            direction = LEFT;
+            break;
+        case 's':
+        case 'j':
+            direction = DOWN;
+            break;
+        case 'd':
+        case 'l':
+            direction = RIGHT;
+            break;
+        case 'w':
+        case 'k':
+            direction = UP;
+            break;
+        default:
+            direction = RIGHT;
+    }
+    return direction;
+}
+
 void t_user_input(void* data) {
     GameObjects* go = (GameObjects*)data;
     Snake* snake = go->snake;
-    int nextX = snake->head->x, nextY = snake->head->y;
-    MOVE direction;
+    uint16_t nextX = snake->head->x, nextY = snake->head->y;
     while (1) {
-        set_termios_opts();
-        int c = getchar();
-        unset_termios_opts();
-        switch(c) {
-            case 'a':
-            case 'h':
-                nextX = snake->head->x-1;
-                direction = LEFT;
-                break;
-            case 's':
-            case 'j':
-                nextY = snake->head->y+1;
-                direction = DOWN;
-                break;
-            case 'd':
-            case 'l':
-                nextX = snake->head->x+1;
-                direction = RIGHT;
-                break;
-            case 'w':
-            case 'k':
-                nextY = snake->head->y-1;
-                direction = UP;
-                break;
+        uint16_t c = getchar();
+        pthread_mutex_lock(&go->mtx);
+        go->direction = char_to_direction(c);
+        if (check_collision(snake, nextX, nextY, go->board_width, go->board_height)) {
+            go->dead = 1;
+            break;
         }
-        if (!check_collision(snake, nextX, nextY, go->board_width, go->board_height))
-            move(snake, direction);
-        else {
-            printf("game over\n");
-            exit(1);
-        }
+        pthread_mutex_unlock(&go->mtx);
     }
 }
 
-Segment* _create_segment(int x, int y) {
+Segment* _create_segment(uint16_t x, uint16_t y) {
     Segment* pSegment = (Segment*)malloc(sizeof(Segment));
     pSegment->next = NULL;
     pSegment->x = x;
@@ -102,7 +108,7 @@ Segment* _create_segment(int x, int y) {
     return pSegment;
 }
 
-void add_segment_tail(Snake* snake, int x, int y) {
+void add_segment_tail(Snake* snake, uint16_t x, uint16_t y) {
     Segment* s = snake->head;
     Segment* new_segment = _create_segment(x, y);
     if (s == NULL) {
@@ -117,7 +123,7 @@ void add_segment_tail(Snake* snake, int x, int y) {
     return;
 }
 
-void add_segment_head(Snake* snake, int x, int y) {
+void add_segment_head(Snake* snake, uint16_t x, uint16_t y) {
     Segment* pHead = snake->head;
     Segment* newSegment = _create_segment(x, y);
     snake->head = newSegment;
@@ -153,4 +159,13 @@ void print_snake(Snake* snake) {
         s = s->next;
     }
     printf("NULL\n");
+}
+
+void free_snake(Snake* snake) {
+    Segment* s = snake->head;
+    while (s->next != NULL) {
+        free(s);
+        s = s->next;
+    }
+    free(snake);
 }
