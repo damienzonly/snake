@@ -31,14 +31,14 @@ int main() {
     dead = 0;
     board_width = 20;
     board_height = board_width / 2;
-    int length = 3;
+    int length = 5;
     int initialX = board_width*0.3;
     int initialY = board_height*0.3;
 
     // initialize snake segments and length
     Snake* snake = (Snake*)malloc(sizeof(Snake) + sizeof(Segment) * length);
     snake->length = length;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i <= length; ++i) {
         add_segment_tail(snake, initialX + i, initialY);
     }
     pthread_t t_input;
