@@ -13,6 +13,10 @@ typedef struct {
     int length;
 } Snake;
 
-void add_segment_tail(Snake*, int, int);
+typedef struct {
+    Snake* snake;
+    int board_width;
+    int board_height;
+} GameObjects;
 
 #endif
