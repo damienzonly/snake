@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "data_structures.h"
 #include "snake.h"
+#include "tty.h"
+
 
 void draw(int boardW, int boardY, Snake* snake) {
     int matrix[boardW][boardY];
@@ -31,27 +33,63 @@ void draw(int boardW, int boardY, Snake* snake) {
     }
 }
 
+int check_collision(Snake* snake, int nextX, int nextY, int board_width, int board_height) {
+    Segment* seg = snake->head;
+    if (segment_exists(seg->next, nextX, nextY)) return 1;
+    while (seg->next != NULL) {
+        seg = seg->next;
+        if (
+            nextX == 0 || nextY == 0 ||
+            nextX == board_width-1 || nextY == board_height-1
+        ) return 1;
+    }
+    return 0;
+}
+
+int segment_exists(Segment* head, int x, int y) {
+    while (head->next != NULL) {
+        head = head->next;
+        if (head->x == x && head->y == y) return 1;
+    }
+    return 0;
+}
+
 void t_user_input(void* data) {
-    Snake* snake = (Snake*) data;
+    GameObjects* go = (GameObjects*)data;
+    Snake* snake = go->snake;
+    int nextX = snake->head->x, nextY = snake->head->y;
+    MOVE direction;
     while (1) {
+        set_termios_opts();
         int c = getchar();
+        unset_termios_opts();
         switch(c) {
             case 'a':
             case 'h':
-                move(snake, LEFT);
+                nextX = snake->head->x-1;
+                direction = LEFT;
                 break;
             case 's':
             case 'j':
-                move(snake, DOWN);
+                nextY = snake->head->y+1;
+                direction = DOWN;
                 break;
             case 'd':
             case 'l':
-                move(snake, RIGHT);
+                nextX = snake->head->x+1;
+                direction = RIGHT;
                 break;
             case 'w':
             case 'k':
-                move(snake, UP);
+                nextY = snake->head->y-1;
+                direction = UP;
                 break;
+        }
+        if (!check_collision(snake, nextX, nextY, go->board_width, go->board_height))
+            move(snake, direction);
+        else {
+            printf("game over\n");
+            exit(1);
         }
     }
 }
@@ -103,6 +141,7 @@ void move(Snake* snake, MOVE m) {
     else if (m == DOWN) add_segment_head(snake, snake->head->x, snake->head->y+1);
     else if (m == LEFT) add_segment_head(snake, snake->head->x-1, snake->head->y);
     else if (m == RIGHT) add_segment_head(snake, snake->head->x+1, snake->head->y);
+    else return;
     pop_segment(snake);
 }
 

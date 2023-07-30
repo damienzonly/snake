@@ -15,5 +15,7 @@ void move(Snake* snake, MOVE direction);
 Segment* _create_segment(int x, int y);
 void add_segment_tail(Snake* snake, int x, int y);
 void add_segment_head(Snake* snake, int x, int y);
-
+int check_collision(Snake* snake, int nextX, int nextY, int board_width, int board_height);
+int segment_exists(Segment* head, int x, int y);
+int check_collision(Snake* snake, int nextX, int nextY, int board_width, int board_height);
 #endif
