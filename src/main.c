@@ -37,7 +37,7 @@ int main() {
         add_segment_tail(snake, initialX + i, initialY);
     }
     
-    GameObjects game_obj = {
+    GameObjects game = {
         .board_width = board_width,
         .board_height = board_height,
         .snake = snake,
@@ -46,7 +46,7 @@ int main() {
         .dead = 0
     };
 
-    if ((pthread_mutex_init(&game_obj.mtx, NULL)) != 0) {
+    if ((pthread_mutex_init(&game.mtx, NULL)) != 0) {
         printf("failed initializing mutex\n");
         exit(1);
     }
@@ -54,18 +54,22 @@ int main() {
     // first frame
     int pid = getpid();
     printf("pid: %d\n", pid);
-    draw(board_width, board_height, snake);
+    draw(board_width, board_height, snake, &game);
     set_termios_opts();
-    game_obj.direction = char_to_direction(getchar());;
-    pthread_create(&thread, NULL, (void*) t_user_input, &game_obj);
+    game.direction = parse_direction(getchar(), NULL, NULL);;
+    pthread_create(&thread, NULL, (void*) t_user_input, &game);
     while (1) {
         printf("pid: %d\n", pid);
-        pthread_mutex_lock(&game_obj.mtx);
-        if (game_obj.dead) break;
-        draw(board_width, board_height, snake);
-        move(snake, game_obj.direction);
-        pthread_mutex_unlock(&game_obj.mtx);
-        usleep(game_obj.speed);
+        pthread_mutex_lock(&game.mtx);
+        if (game.dead) break;
+        move(snake, game.direction);
+        draw(board_width, board_height, snake, &game);
+        print_snake(snake);
+        printf("[dead]: %d\n", game.dead);
+        printf("[direction]: %d\n", game.direction);
+        printf("[bw/bh]: %dx%d\n", board_width, board_height);
+        pthread_mutex_unlock(&game.mtx);
+        usleep(game.speed);
     }
     printf("game over\n");
     pthread_join(thread, NULL);

@@ -9,7 +9,7 @@ void clear_screen() {
     printf("\033[2J\033[H"); // ANSI escape code to clear the screen and move cursor to (0,0)
 }
 
-void draw(uint16_t boardW, uint16_t boardY, Snake* snake) {
+void draw(uint16_t boardW, uint16_t boardY, Snake* snake, GameObjects* game) {
     clear_screen();
     uint16_t matrix[boardW][boardY];
     for (int y = 0; y < boardY; ++y) {
@@ -20,14 +20,21 @@ void draw(uint16_t boardW, uint16_t boardY, Snake* snake) {
                 if (x == 0 || x == boardW-1) {
                     matrix[x][y] = '#';
                 } else {
-                    matrix[x][y] = ' ';
+                    matrix[x][y] = '.';
                 }
             }
         }
     }
     Segment* s = snake->head;
+    char head;
+    MOVE d = game->direction;
+    if (d == UP) head = '^';
+    if (d == DOWN) head = 'V';
+    if (d == LEFT) head = '<';
+    if (d == RIGHT) head = '>';
+    matrix[s->x][s->y] = head;
     while (s->next != NULL) {
-        matrix[s->x][s->y] = 'o';
+        matrix[s->next->x][s->next->y] = 'o';
         s = s->next;
     }
     for (uint16_t y = 0; y < boardY; ++y) {
@@ -38,48 +45,49 @@ void draw(uint16_t boardW, uint16_t boardY, Snake* snake) {
     }
 }
 
-uint16_t check_collision(Snake* snake, uint16_t nextX, uint16_t nextY, uint16_t board_width, uint16_t board_height) {
+uint16_t is_collision(Snake* snake, uint16_t nextX, uint16_t nextY, uint16_t board_width, uint16_t board_height) {
     Segment* seg = snake->head;
-    if (segment_exists(seg->next, nextX, nextY)) return 1;
-    while (seg->next != NULL) {
-        seg = seg->next;
-        if (
-            nextX == 0 || nextY == 0 ||
-            nextX == board_width-1 || nextY == board_height-1
-        ) return 1;
-    }
-    return 0;
+    // exclude the head for the search
+    return (
+        segment_exists(seg->next, nextX, nextY) ||
+        nextX == 0 || nextY == 0 ||
+        nextX == board_width-1 || nextY == board_height-1
+    );
 }
 
 uint16_t segment_exists(Segment* head, uint16_t x, uint16_t y) {
     while (head->next != NULL) {
-        head = head->next;
         if (head->x == x && head->y == y) return 1;
+        head = head->next;
     }
     return 0;
 }
 
-MOVE char_to_direction(char c) {
+MOVE parse_direction(char c, uint16_t* nextX, uint16_t* nextY) {
     MOVE direction;
     switch(c) {
         case 'a':
         case 'h':
             direction = LEFT;
+            if (nextX != NULL) *nextX -= 1;
             break;
         case 's':
         case 'j':
             direction = DOWN;
+            if (nextY != NULL) *nextY += 1;
             break;
         case 'd':
         case 'l':
             direction = RIGHT;
+            if (nextX != NULL) *nextX += 1;
             break;
         case 'w':
         case 'k':
             direction = UP;
+            if (nextY != NULL) *nextY -= 1;
             break;
         default:
-            direction = RIGHT;
+            direction = -1;
     }
     return direction;
 }
@@ -87,16 +95,26 @@ MOVE char_to_direction(char c) {
 void t_user_input(void* data) {
     GameObjects* go = (GameObjects*)data;
     Snake* snake = go->snake;
-    uint16_t nextX = snake->head->x, nextY = snake->head->y;
     while (1) {
         uint16_t c = getchar();
         pthread_mutex_lock(&go->mtx);
-        go->direction = char_to_direction(c);
-        if (check_collision(snake, nextX, nextY, go->board_width, go->board_height)) {
-            go->dead = 1;
-            break;
+        uint16_t nextX = snake->head->x, nextY = snake->head->y;
+        MOVE next_move = parse_direction(c, &nextX, &nextY);
+        uint8_t direction_sum = go->direction + next_move;
+        if (direction_sum == 1 || direction_sum == 5) {
+            pthread_mutex_unlock(&go->mtx);
+            continue;
         }
-        pthread_mutex_unlock(&go->mtx);
+        go->direction = next_move;
+        // fprintf(stderr, "nx: %d, ny: %d\n", nextX, nextY);
+        if (is_collision(snake, nextX, nextY, go->board_width, go->board_height)) {
+            go->dead = 1;
+            fprintf(stderr, ">>>(%d, %d)\n", nextX, nextY);
+            pthread_mutex_unlock(&go->mtx);
+            break;
+        } else {
+            pthread_mutex_unlock(&go->mtx);
+        }
     }
 }
 
