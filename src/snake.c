@@ -45,13 +45,13 @@ void draw(uint16_t boardW, uint16_t boardY, Snake* snake, GameObjects* game) {
     }
 }
 
-uint16_t is_collision(Snake* snake, uint16_t nextX, uint16_t nextY, uint16_t board_width, uint16_t board_height) {
+uint16_t is_collision(Snake* snake, uint16_t next_x, uint16_t next_y, uint16_t board_width, uint16_t board_height) {
     Segment* seg = snake->head;
     // exclude the head for the search
     return (
-        segment_exists(seg->next, nextX, nextY) ||
-        nextX == 0 || nextY == 0 ||
-        nextX == board_width-1 || nextY == board_height-1
+        segment_exists(seg->next, next_x, next_y) ||
+        next_x == 0 || next_y == 0 ||
+        next_x == board_width-1 || next_y == board_height-1
     );
 }
 
@@ -63,28 +63,28 @@ uint16_t segment_exists(Segment* head, uint16_t x, uint16_t y) {
     return 0;
 }
 
-MOVE parse_direction(char c, uint16_t* nextX, uint16_t* nextY) {
+MOVE parse_direction(char c, uint16_t* next_x, uint16_t* next_y) {
     MOVE direction;
     switch(c) {
         case 'a':
         case 'h':
             direction = LEFT;
-            if (nextX != NULL) *nextX -= 1;
+            if (next_x != NULL) *next_x -= 1;
             break;
         case 's':
         case 'j':
             direction = DOWN;
-            if (nextY != NULL) *nextY += 1;
+            if (next_y != NULL) *next_y += 1;
             break;
         case 'd':
         case 'l':
             direction = RIGHT;
-            if (nextX != NULL) *nextX += 1;
+            if (next_x != NULL) *next_x += 1;
             break;
         case 'w':
         case 'k':
             direction = UP;
-            if (nextY != NULL) *nextY -= 1;
+            if (next_y != NULL) *next_y -= 1;
             break;
         default:
             direction = -1;
@@ -98,18 +98,18 @@ void t_user_input(void* data) {
     while (1) {
         uint16_t c = getchar();
         pthread_mutex_lock(&go->mtx);
-        uint16_t nextX = snake->head->x, nextY = snake->head->y;
-        MOVE next_move = parse_direction(c, &nextX, &nextY);
+        uint16_t next_x = snake->head->x, next_y = snake->head->y;
+        MOVE next_move = parse_direction(c, &next_x, &next_y);
         uint8_t direction_sum = go->direction + next_move;
         if (direction_sum == 1 || direction_sum == 5) {
             pthread_mutex_unlock(&go->mtx);
             continue;
         }
         go->direction = next_move;
-        // fprintf(stderr, "nx: %d, ny: %d\n", nextX, nextY);
-        if (is_collision(snake, nextX, nextY, go->board_width, go->board_height)) {
+        // fprintf(stderr, "nx: %d, ny: %d\n", next_x, next_y);
+        if (is_collision(snake, next_x, next_y, go->board_width, go->board_height)) {
             go->dead = 1;
-            fprintf(stderr, ">>>(%d, %d)\n", nextX, nextY);
+            fprintf(stderr, ">>>(%d, %d)\n", next_x, next_y);
             pthread_mutex_unlock(&go->mtx);
             break;
         } else {
