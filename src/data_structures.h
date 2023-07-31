@@ -28,6 +28,9 @@ typedef struct {
     uint32_t speed;
     pthread_mutex_t mtx;
     uint8_t dead;
+    uint8_t apple_x;
+    uint8_t apple_y;
+    uint32_t score;
 } GameObjects;
 
 #endif

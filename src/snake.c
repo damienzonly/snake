@@ -14,14 +14,17 @@ void draw(uint16_t boardW, uint16_t boardY, Snake* snake, GameObjects* game) {
     uint16_t matrix[boardW][boardY];
     for (int y = 0; y < boardY; ++y) {
         for (uint16_t x = 0; x < boardW; ++x) {
-            if (y == 0 || y == boardY-1) {
+            // apple
+            if (x == game->apple_x && y == game->apple_y) {
+                matrix[x][y] = 'X';
+            }
+            // wall
+            else if (y == 0 || y == boardY-1 || x == 0 || x == boardW-1) {
                 matrix[x][y] = '#';
-            } else {
-                if (x == 0 || x == boardW-1) {
-                    matrix[x][y] = '#';
-                } else {
-                    matrix[x][y] = '.';
-                }
+            }
+            // space
+            else {
+                matrix[x][y] = ' ';
             }
         }
     }
@@ -112,9 +115,14 @@ void t_user_input(void* data) {
             fprintf(stderr, ">>>(%d, %d)\n", next_x, next_y);
             pthread_mutex_unlock(&go->mtx);
             break;
-        } else {
-            pthread_mutex_unlock(&go->mtx);
         }
+        if (go->apple_x == next_x && go->apple_y == next_y) {
+            go->apple_x = board_rand(1, go->board_width);
+            go->apple_y = board_rand(1, go->board_height);
+            go->score += 100;
+            go->speed += 50000;
+        }
+        pthread_mutex_unlock(&go->mtx);
     }
 }
 
@@ -186,4 +194,8 @@ void free_snake(Snake* snake) {
         s = s->next;
     }
     free(snake);
+}
+
+uint16_t board_rand(uint16_t min, uint16_t max) {
+   return (rand() % (max - min + 1)) + min;
 }

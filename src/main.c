@@ -19,6 +19,7 @@ void signal_handler(int signal) {
 }
 
 int main() {
+    srand(time(0));
     uint16_t board_width, board_height,
             length, initialX, initialY;
     pthread_t thread;
@@ -43,7 +44,10 @@ int main() {
         .snake = snake,
         .direction = UP,
         .speed = 100000,
-        .dead = 0
+        .dead = 0,
+        .score = 0,
+        .apple_x = board_rand(1, board_width),
+        .apple_y = board_rand(1, board_height)
     };
 
     if ((pthread_mutex_init(&game.mtx, NULL)) != 0) {
@@ -65,6 +69,7 @@ int main() {
         move(snake, game.direction);
         draw(board_width, board_height, snake, &game);
         print_snake(snake);
+        printf("SCORE: %d\n", game.score);
         printf("[dead]: %d\n", game.dead);
         printf("[direction]: %d\n", game.direction);
         printf("[bw/bh]: %dx%d\n", board_width, board_height);

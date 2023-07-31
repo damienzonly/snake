@@ -15,4 +15,5 @@ uint16_t is_collision(Snake* snake, uint16_t next_x, uint16_t next_y, uint16_t b
 void free_snake(Snake* snake);
 void clear_screen();
 MOVE parse_direction(char c, uint16_t*, uint16_t*);
+uint16_t board_rand(uint16_t min, uint16_t max);
 #endif
