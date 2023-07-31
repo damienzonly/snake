@@ -89,8 +89,6 @@ MOVE parse_direction(char c, uint16_t* next_x, uint16_t* next_y) {
             direction = UP;
             if (next_y != NULL) *next_y -= 1;
             break;
-        default:
-            direction = -1;
     }
     return direction;
 }
@@ -120,6 +118,7 @@ void t_user_input(void* data) {
             break;
         }
         if (game->apple_x == next_x && game->apple_y == next_y) {
+            printf("tumadre");
             game->apple_x = board_rand(1, game->board_width);
             game->apple_y = board_rand(1, game->board_height);
             game->score += 100;
@@ -199,6 +198,6 @@ void free_snake(Snake* snake) {
     free(snake);
 }
 
-uint16_t board_rand(uint16_t min, uint16_t max) {
+int board_rand(int min, int max) {
    return (rand() % (max - min + 1)) + min;
 }
