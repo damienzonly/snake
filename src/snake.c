@@ -96,33 +96,33 @@ MOVE parse_direction(char c, uint16_t* next_x, uint16_t* next_y) {
 }
 
 void t_user_input(void* data) {
-    GameObjects* go = (GameObjects*)data;
-    Snake* snake = go->snake;
+    GameObjects* game = (GameObjects*)data;
+    Snake* snake = game->snake;
     while (1) {
         uint16_t c = getchar();
-        pthread_mutex_lock(&go->mtx);
+        pthread_mutex_lock(&game->mtx);
         uint16_t next_x = snake->head->x, next_y = snake->head->y;
         MOVE next_move = parse_direction(c, &next_x, &next_y);
-        uint8_t direction_sum = go->direction + next_move;
+        uint8_t direction_sum = game->direction + next_move;
         if (direction_sum == 1 || direction_sum == 5) {
-            pthread_mutex_unlock(&go->mtx);
+            pthread_mutex_unlock(&game->mtx);
             continue;
         }
-        go->direction = next_move;
+        game->direction = next_move;
         // fprintf(stderr, "nx: %d, ny: %d\n", next_x, next_y);
-        if (is_collision(snake, next_x, next_y, go->board_width, go->board_height)) {
-            go->dead = 1;
+        if (is_collision(snake, next_x, next_y, game->board_width, game->board_height)) {
+            game->dead = 1;
             fprintf(stderr, ">>>(%d, %d)\n", next_x, next_y);
-            pthread_mutex_unlock(&go->mtx);
+            pthread_mutex_unlock(&game->mtx);
             break;
         }
-        if (go->apple_x == next_x && go->apple_y == next_y) {
-            go->apple_x = board_rand(1, go->board_width);
-            go->apple_y = board_rand(1, go->board_height);
-            go->score += 100;
-            go->speed += 50000;
+        if (game->apple_x == next_x && game->apple_y == next_y) {
+            game->apple_x = board_rand(1, game->board_width);
+            game->apple_y = board_rand(1, game->board_height);
+            game->score += 100;
+            game->speed += 50000;
         }
-        pthread_mutex_unlock(&go->mtx);
+        pthread_mutex_unlock(&game->mtx);
     }
 }
 
