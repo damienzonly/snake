@@ -19,6 +19,7 @@ void signal_handler(int signal) {
 }
 
 int main() {
+    // create seed for rand();
     srand(time(0));
     uint16_t board_width, board_height,
             length, initialX, initialY;

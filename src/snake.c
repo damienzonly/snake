@@ -104,6 +104,9 @@ void t_user_input(void* data) {
         uint16_t next_x = snake->head->x, next_y = snake->head->y;
         MOVE next_move = parse_direction(c, &next_x, &next_y);
         uint8_t direction_sum = game->direction + next_move;
+        // if moving in opposite direction respect to the current one
+        // UP + DOWN = 1
+        // LEFT + RIGHT = 5
         if (direction_sum == 1 || direction_sum == 5) {
             pthread_mutex_unlock(&game->mtx);
             continue;
