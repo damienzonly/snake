@@ -168,7 +168,6 @@ void move(Snake* snake, MOVE m) {
     else if (m == LEFT) add_segment_head(snake, x-1, y);
     else if (m == RIGHT) add_segment_head(snake, x+1, y);
     else return;
-    pop_segment(snake);
 }
 
 void print_snake(Snake* snake) {

@@ -81,6 +81,8 @@ int main() {
             game.apple_y = board_rand(1, game.board_height);
             game.score += 100;
             game.speed -= 10000;
+        } else {
+            pop_segment(snake);
         }
         draw(board_width, board_height, snake, &game);
         // print_snake(snake);
