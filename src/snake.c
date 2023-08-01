@@ -119,12 +119,10 @@ void t_user_input(void* data) {
         // fprintf(stderr, "nx: %d, ny: %d\n", next_x, next_y);
         if (is_collision(snake, next_x, next_y, game->board_width, game->board_height)) {
             game->dead = 1;
-            fprintf(stderr, ">>>(%d, %d)\n", next_x, next_y);
             pthread_mutex_unlock(&game->mtx);
             break;
         }
         if (game->apple_x == next_x && game->apple_y == next_y) {
-            printf("tumadre");
             game->apple_x = board_rand(1, game->board_width);
             game->apple_y = board_rand(1, game->board_height);
             game->score += 100;
