@@ -122,7 +122,7 @@ void t_user_input(void* data) {
             game->apple_x = board_rand(1, game->board_width);
             game->apple_y = board_rand(1, game->board_height);
             game->score += 100;
-            game->speed += 50000;
+            game->speed -= 50000;
         }
         pthread_mutex_unlock(&game->mtx);
     }
