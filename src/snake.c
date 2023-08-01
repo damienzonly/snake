@@ -11,8 +11,9 @@ void clear_screen() {
 
 void print_banner(GameObjects* game) {
     printf("SCORE: %d\n", game->score);
-    printf("[dead]: %d\n", game->dead);
-    printf("[direction]: %d\n", game->direction);
+    // printf("[dead]: %d\n", game->dead);
+    // printf("[direction]: %d\n", game->direction);
+    // printf("[apple]: (%d, %d)\n", game->apple_x, game->apple_y);
 }
 
 void draw(uint16_t boardW, uint16_t boardY, Snake* snake, GameObjects* game) {
@@ -104,31 +105,17 @@ void t_user_input(void* data) {
     Snake* snake = game->snake;
     while (1) {
         uint16_t c = getchar();
-        pthread_mutex_lock(&game->mtx);
-        uint16_t next_x = snake->head->x, next_y = snake->head->y;
-        MOVE next_move = parse_direction(c, &next_x, &next_y);
+        // pthread_mutex_lock(&game->mtx);
+        MOVE next_move = parse_direction(c, NULL, NULL);
         uint8_t direction_sum = game->direction + next_move;
         // if moving in opposite direction respect to the current one
         // UP + DOWN = 1
         // LEFT + RIGHT = 5
-        if (direction_sum == 1 || direction_sum == 5) {
+        if (direction_sum != 1 && direction_sum != 5) {
+            pthread_mutex_lock(&game->mtx);
+            game->direction = next_move;
             pthread_mutex_unlock(&game->mtx);
-            continue;
         }
-        game->direction = next_move;
-        // fprintf(stderr, "nx: %d, ny: %d\n", next_x, next_y);
-        if (is_collision(snake, next_x, next_y, game->board_width, game->board_height)) {
-            game->dead = 1;
-            pthread_mutex_unlock(&game->mtx);
-            break;
-        }
-        if (game->apple_x == next_x && game->apple_y == next_y) {
-            game->apple_x = board_rand(1, game->board_width);
-            game->apple_y = board_rand(1, game->board_height);
-            game->score += 100;
-            game->speed -= 50000;
-        }
-        pthread_mutex_unlock(&game->mtx);
     }
 }
 

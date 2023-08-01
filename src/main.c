@@ -22,7 +22,8 @@ int main() {
     // create seed for rand();
     srand(time(0));
     uint16_t board_width, board_height,
-            length, initialX, initialY;
+            length, initialX, initialY,
+            next_x, next_y;
     pthread_t thread;
     // signal(SIGINT, signal_handler);
     // signal(SIGTERM, signal_handler);
@@ -38,13 +39,16 @@ int main() {
     for (int i = 0; i <= length; ++i) {
         add_segment_tail(snake, initialX + i, initialY);
     }
+
+    next_x = snake->head->x;
+    next_y = snake->head->y;
     
     GameObjects game = {
         .board_width = board_width,
         .board_height = board_height,
         .snake = snake,
         .direction = UP,
-        .speed = 100000,
+        .speed = 200000,
         .dead = 0,
         .score = 0,
         .apple_x = board_rand(1, board_width),
@@ -61,15 +65,25 @@ int main() {
     printf("pid: %d\n", pid);
     draw(board_width, board_height, snake, &game);
     set_termios_opts();
-    game.direction = parse_direction(getchar(), NULL, NULL);;
+    game.direction = parse_direction(getchar(), NULL, NULL);
     pthread_create(&thread, NULL, (void*) t_user_input, &game);
     while (1) {
         printf("pid: %d\n", pid);
         pthread_mutex_lock(&game.mtx);
         if (game.dead) break;
+        parse_direction(game.direction, &next_x, &next_y);
+        // if (is_collision(game.snake, next_x, next_y, board_width, board_height)) {
+        //     break;
+        // }
         move(snake, game.direction);
+        if (game.apple_x == snake->head->x && game.apple_y == snake->head->y) {
+            game.apple_x = board_rand(1, game.board_width);
+            game.apple_y = board_rand(1, game.board_height);
+            game.score += 100;
+            game.speed -= 10000;
+        }
         draw(board_width, board_height, snake, &game);
-        print_snake(snake);
+        // print_snake(snake);
         print_banner(&game);
         pthread_mutex_unlock(&game.mtx);
         usleep(game.speed);
