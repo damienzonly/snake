@@ -70,10 +70,7 @@ int main() {
         move(snake, game.direction);
         draw(board_width, board_height, snake, &game);
         print_snake(snake);
-        printf("SCORE: %d\n", game.score);
-        printf("[dead]: %d\n", game.dead);
-        printf("[direction]: %d\n", game.direction);
-        printf("[bw/bh]: %dx%d\n", board_width, board_height);
+        print_banner(&game);
         pthread_mutex_unlock(&game.mtx);
         usleep(game.speed);
     }

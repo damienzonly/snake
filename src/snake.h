@@ -16,4 +16,5 @@ void free_snake(Snake* snake);
 void clear_screen();
 MOVE parse_direction(char c, uint16_t*, uint16_t*);
 int board_rand(int min, int max);
+void print_banner(GameObjects*);
 #endif

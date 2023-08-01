@@ -9,6 +9,12 @@ void clear_screen() {
     printf("\033[2J\033[H"); // ANSI escape code to clear the screen and move cursor to (0,0)
 }
 
+void print_banner(GameObjects* game) {
+    printf("SCORE: %d\n", game->score);
+    printf("[dead]: %d\n", game->dead);
+    printf("[direction]: %d\n", game->direction);
+}
+
 void draw(uint16_t boardW, uint16_t boardY, Snake* snake, GameObjects* game) {
     clear_screen();
     uint16_t matrix[boardW][boardY];
